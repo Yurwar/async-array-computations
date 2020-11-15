@@ -31,19 +31,19 @@ public class AsyncArraysComputationController {
         printArray(c1, "Third array");
 
         var multipliedC1Future = supplyAsync(() -> multiplyElements(c1, 2))
-                .thenComposeAsync(list -> supplyAsync(() -> sortList(list)));
+                .thenApplyAsync(this::sortList);
 
         var evenC2Future = supplyAsync(() -> filterElements(c2, el -> el % 2 == 0))
-                .thenComposeAsync(list -> supplyAsync(() -> sortList(list)));
+                .thenApplyAsync(this::sortList);
 
         var c3MaxElementFuture = supplyAsync(() ->
                 c3.stream().max(Integer::compareTo));
 
-        var inRangeFromMaxC3Future = c3MaxElementFuture.thenComposeAsync(maxOpt ->
-                supplyAsync(() -> filterElements(c3, el -> maxOpt.map(max ->
+        var inRangeFromMaxC3Future = c3MaxElementFuture
+                .thenApplyAsync(maxOpt -> filterElements(c3, el -> maxOpt.map(max ->
                         isElementInRangeFromAnother(el, max, 4, 6))
-                        .orElse(false))))
-                .thenComposeAsync(list -> supplyAsync(() -> sortList(list)));
+                        .orElse(false)))
+                .thenApplyAsync(this::sortList);
 
         printArray(getResultFromFuture(multipliedC1Future), "Multiplied first array");
         printArray(getResultFromFuture(evenC2Future), "Even second array");
@@ -54,7 +54,7 @@ public class AsyncArraysComputationController {
 
         var result = intersectedListsFuture
                 .thenCombineAsync(multipliedC1Future, this::difference)
-                .thenApply(this::sortList);
+                .thenApplyAsync(this::sortList);
 
         printArray(getResultFromFuture(intersectedListsFuture), "Intersected second and third");
         printArray(getResultFromFuture(result), "Intersected subtract first");
